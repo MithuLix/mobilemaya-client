@@ -8,7 +8,7 @@ import NoMatch from './Components/NoMatch/NoMatch';
 import { createContext, useState } from 'react';
 import PrivateRoute from './Components/PrivateRoute/PrivateRoute';
 import AppBar from './Components/AppBar/AppBar';
-import Login from './Components/Login/Login';
+import Login from './Components/Login/Login.js';
 import AddMobile from './Components/Admin/AddMobile';
 import Mobiles from './Components/Mobiles/Mobiles';
 import Checkout from './Components/Checkout/Checkout';
@@ -47,7 +47,7 @@ function App() {
 
             <Route path="/deals"> <Deals /></Route>
 
-            <Route path="/login"><Login /></Route>
+            <Route path="/login"><Login/></Route>
 
             <Route path="*"><NoMatch /></Route>
           </Switch>
