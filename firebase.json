@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": "build",
+    "site": "mobilemaya-406d4",
     "ignore": [
       "firebase.json",
       "**/.*",

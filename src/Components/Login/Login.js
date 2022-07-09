@@ -7,99 +7,105 @@ import { Col, Container, Row, Form, Button, Card, ButtonGroup} from 'react-boots
 // firebase imported files
 import "firebase/auth";
 import firebase from "firebase/app";
-import firebaseConfig from '../FirebaseManager/FirebaseConfig';
+import firebaseConfig from './FirebaseConfig';
 import { Link } from 'react-router-dom';
 if(firebase.apps.length === 0){ firebase.initializeApp(firebaseConfig);}
 
 
 
 export default function Login () {
-    const [loggedInUser, setLoggedInUser] = useContext(UserContext);
-    const [newUser, setNewUser] = useState(false);
-    const [user, setUser] = useState({ isSignedIn : false, name:'', email:'', photo:'', error:'', success:false});
-    let history = useHistory();
-    let location = useLocation();
-  
-    let { from } = location.state || { from: { pathname: "/" }};
+  const [loggedInUser, setLoggedInUser] = useContext(UserContext);
+  const [newUser, setNewUser] = useState(false);
+  const [user, setUser] = useState({ isSignedIn : false, name:'', email:'', photo:'', error:'', success:false});
+  let history = useHistory();
+  let location = useLocation();
 
-    //Usual login/out method
-  const handleBlur = (e) => {
-    let isFieldValid = true;
-    if (e.target.name === "email") {
-    isFieldValid = /\S+@\S+\.\S+/.test(e.target.value);
-    }
-    if(e.target.name === 'password') {
-    const isPasswordValid = e.target.value.length > 6;
-    const passwordHasNumber = /\d{1}/.test(e.target.value);
-    isFieldValid = isPasswordValid && passwordHasNumber;
-    }
-    if(isFieldValid) {
-    const newUserInfo = {...user}
-    newUserInfo[e.target.name]  = e.target.value;
-    setUser(newUserInfo);
-    }
+  let { from } = location.state || { from: { pathname: "/" }};
+
+  //Usual login/out method
+const handleBlur = (e) => {
+  let isFieldValid = true;
+  if (e.target.name === "email") {
+  isFieldValid = /\S+@\S+\.\S+/.test(e.target.value);
   }
-  const handleSubmit = (e) => {
-    if (newUser && user.email && user.password){ 
-      firebase.auth().createUserWithEmailAndPassword(user.email, user.password)
-      .then((res) => {
-        const newUserInfo = {...user};
-        newUserInfo.error = '';
-        newUserInfo.success = true;
-        setUser(newUserInfo);
-        updateUserName(user.name);
-        history.push(from);
-      })
-      .catch((error) => { 
-        const newUserInfo = {...user};
-        newUserInfo.error = error.message;
-        newUserInfo.success = false;
-        setUser(newUserInfo);
-      })
-    }
-    if(!newUser && user.email && user.password){
-      firebase.auth().signInWithEmailAndPassword(user.email, user.password)
-      .then((res) => {
-        const newUserInfo = {...user};
-        newUserInfo.error = '';
-        newUserInfo.success = true;
-        setUser(newUserInfo);
-        setLoggedInUser(newUserInfo);
-        history.replace(from);
-      })
-      .catch((error) => { 
-        const newUserInfo = {...user};
-        newUserInfo.error = error.message;
-        newUserInfo.success = false;
-        setUser(newUserInfo);
-      })
-    }
-    e.preventDefault();
+  if(e.target.name === 'password') {
+  const isPasswordValid = e.target.value.length > 6;
+  const passwordHasNumber = /\d{1}/.test(e.target.value);
+  isFieldValid = isPasswordValid && passwordHasNumber;
   }
-
-  // updateUserInfo
-  const updateUserName = name => {
-    const user = firebase.auth().currentUser;
-    user.updateProfile({
-      displayName:name
-    }).then(() => {})
-  .catch((error)=> {console.log(error)})
+  if(isFieldValid) {
+  const newUserInfo = {...user}
+  newUserInfo[e.target.name]  = e.target.value;
+  setUser(newUserInfo);
   }
-  
-
-
-  //Google sign in/out provider
-  const GoogleSignIn =()=> {
-    var GoogleProvider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(GoogleProvider)
-    .then(res=> {
-      const {displayName, photoURL, email} = res.user;
-      const signedInUser = {isSignedIn:true, name:displayName, email:email, photo:photoURL}
-      setLoggedInUser(signedInUser);
+}
+const handleSubmit = (e) => {
+  if (newUser && user.email && user.password){ 
+    firebase.auth().createUserWithEmailAndPassword(user.email, user.password)
+    .then((res) => {
+      const newUserInfo = {...user};
+      newUserInfo.error = '';
+      newUserInfo.success = true;
+      setUser(newUserInfo);
+      updateUserName(user.name);
+      history.push(from);
+    })
+    .catch((error) => { 
+      const newUserInfo = {...user};
+      newUserInfo.error = error.message;
+      newUserInfo.success = false;
+      setUser(newUserInfo);
+    })
+  }
+  if(!newUser && user.email && user.password){
+    firebase.auth().signInWithEmailAndPassword(user.email, user.password)
+    .then((res) => {
+      const newUserInfo = {...user};
+      newUserInfo.error = '';
+      newUserInfo.success = true;
+      setUser(newUserInfo);
+      setLoggedInUser(newUserInfo);
       history.replace(from);
     })
-    .catch((error) => { console.log(error.message)})
+    .catch((error) => { 
+      const newUserInfo = {...user};
+      newUserInfo.error = error.message;
+      newUserInfo.success = false;
+      setUser(newUserInfo);
+    })
   }
+  e.preventDefault();
+}
+
+// updateUserInfo
+const updateUserName = name => {
+  const user = firebase.auth().currentUser;
+  user.updateProfile({
+    displayName:name
+  }).then(() => {})
+.catch((error)=> {console.log(error)})
+}
+
+const setUserToken = () => {
+  firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
+    sessionStorage.setItem('token', idToken);
+  }).catch(function(error) {console.log(error);});
+}
+
+
+
+//Google sign in/out provider
+const GoogleSignIn =()=> {
+  var GoogleProvider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(GoogleProvider)
+  .then(res=> {
+    const {displayName, photoURL, email} = res.user;
+    const signedInUser = {isSignedIn:true, name:displayName, email:email, photo:photoURL}
+    setLoggedInUser(signedInUser);
+    history.replace(from);
+  })
+  .catch((error) => { console.log(error.message)})
+}
 
   //css
   const linkCss = {textDecoration:"none", color:"#00d369f6", cursor:"pointer"};
